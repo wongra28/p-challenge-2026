@@ -403,23 +403,31 @@ export default function ProposalsScreen() {
           const gapVal = ratings.length >= 2
             ? Math.round((Math.max(...ratings) - Math.min(...ratings)) * 10) / 10
             : 0;
-          let gapQualifier: string;
-          let gapColor: string;
-          if (gapVal <= 0.2) {
-            gapQualifier = 'Great';
-            gapColor = colors.textSuccess;
-          } else if (gapVal <= 0.5) {
-            gapQualifier = 'Good';
-            gapColor = colors.textSuccess;
-          } else if (gapVal <= 1.0) {
-            gapQualifier = 'Fair';
-            gapColor = colors.textPrimary;
-          } else if (gapVal <= 2.0) {
-            gapQualifier = 'Poor';
-            gapColor = colors.textAmber;
-          } else {
-            gapQualifier = 'Bad';
-            gapColor = colors.textError;
+
+          function gapStyle(val: number) {
+            if (val <= 0.2) return { qualifier: 'Great', color: colors.textSuccess };
+            if (val <= 0.5) return { qualifier: 'Good', color: colors.textSuccess };
+            if (val <= 1.0) return { qualifier: 'Fair', color: colors.textPrimary };
+            if (val <= 2.0) return { qualifier: 'Poor', color: colors.textAmber };
+            return { qualifier: 'Bad', color: colors.textError };
+          }
+
+          const { qualifier: gapQualifier, color: gapColor } = gapStyle(gapVal);
+
+          // Preview gap (when swap is being previewed)
+          let previewGapVal: number | null = null;
+          let previewGapQualifier: string | null = null;
+          let previewGapColor: string | null = null;
+          if (isInPreview && previewData) {
+            const previewRatings = previewData.previewTeams.map((t) => teamRating(t.players));
+            previewGapVal = previewRatings.length >= 2
+              ? Math.round((Math.max(...previewRatings) - Math.min(...previewRatings)) * 10) / 10
+              : 0;
+            if (previewGapVal !== gapVal) {
+              const ps = gapStyle(previewGapVal);
+              previewGapQualifier = ps.qualifier;
+              previewGapColor = ps.color;
+            }
           }
 
           // Friend pairs
@@ -454,12 +462,30 @@ export default function ProposalsScreen() {
                     </Text>
                   </View>
                   <View style={styles.tradeoffRight}>
-                    <Text style={[typeStyles.displaySm, { color: gapColor }]}>
-                      {gapVal.toFixed(1)}
-                    </Text>
-                    <Text style={[typeStyles.labelSm, { color: gapColor }]}>
-                      {gapQualifier}
-                    </Text>
+                    {previewGapVal !== null && previewGapColor ? (
+                      <>
+                        <View style={styles.previewGapRow}>
+                          <Text style={[typeStyles.textSm, styles.gapOld]}>
+                            {gapVal.toFixed(1)}
+                          </Text>
+                          <Text style={[typeStyles.displaySm, { color: previewGapColor }]}>
+                            {previewGapVal.toFixed(1)}
+                          </Text>
+                        </View>
+                        <Text style={[typeStyles.labelSm, { color: previewGapColor }]}>
+                          {previewGapQualifier}
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={[typeStyles.displaySm, { color: gapColor }]}>
+                          {gapVal.toFixed(1)}
+                        </Text>
+                        <Text style={[typeStyles.labelSm, { color: gapColor }]}>
+                          {gapQualifier}
+                        </Text>
+                      </>
+                    )}
                   </View>
                 </View>
 
@@ -704,6 +730,15 @@ const styles = StyleSheet.create({
   tradeoffRight: {
     alignItems: 'center',
     gap: spacing.xxs,
+  },
+  previewGapRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.sm,
+  },
+  gapOld: {
+    color: colors.textDisabled,
+    textDecorationLine: 'line-through',
   },
   splitWarning: {
     flexDirection: 'row',
