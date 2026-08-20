@@ -406,7 +406,7 @@ export default function ProposalsScreen() {
 
           function gapStyle(val: number) {
             if (val <= 0.3) return { qualifier: 'Great', color: colors.textSuccess };
-            if (val <= 0.7) return { qualifier: 'Fine', color: colors.textSuccess };
+            if (val <= 0.7) return { qualifier: 'Fine', color: colors.textAmber };
             return { qualifier: 'Poor', color: colors.textError };
           }
 
