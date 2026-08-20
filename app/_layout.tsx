@@ -1,35 +1,61 @@
+import { useState, useEffect, useCallback } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
-import { View, Text, useWindowDimensions, ActivityIndicator, Platform, StyleSheet } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, Platform, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SessionProvider } from '../lib/context';
-import { colors, spacing, fonts, type as typeStyles } from '../lib/theme';
+import { colors, spacing, fonts } from '../lib/theme';
 
 const MAX_MOBILE_WIDTH = 480;
 
-function MobileGate({ children }: { children: React.ReactNode }) {
-  const { width } = useWindowDimensions();
+function useWindowWidth() {
+  const [width, setWidth] = useState(() =>
+    Platform.OS === 'web' && typeof window !== 'undefined'
+      ? window.innerWidth
+      : 0
+  );
 
-  if (Platform.OS !== 'web' || width <= MAX_MOBILE_WIDTH) {
-    return <>{children}</>;
-  }
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return width;
+}
+
+function MobileGate({ children }: { children: React.ReactNode }) {
+  const width = useWindowWidth();
+  const [dismissed, setDismissed] = useState(false);
+
+  const showOverlay =
+    Platform.OS === 'web' && width > MAX_MOBILE_WIDTH && !dismissed;
 
   return (
     <View style={gateStyles.wrapper}>
       {children}
-      <View style={gateStyles.overlay}>
-        <View style={gateStyles.content}>
-          <Feather name="smartphone" size={40} color={colors.textBrand} />
-          <Text style={gateStyles.title}>Mobile viewport required</Text>
-          <Text style={gateStyles.body}>
-            Resize your window to view in mobile width!
-          </Text>
-          <Text style={gateStyles.hint}>
-            Narrow your browser to under {MAX_MOBILE_WIDTH}px
-          </Text>
+      {showOverlay && (
+        <View style={gateStyles.overlay}>
+          <View style={gateStyles.content}>
+            <Feather name="smartphone" size={40} color={colors.textBrand} />
+            <Text style={gateStyles.title}>Mobile viewport required</Text>
+            <Text style={gateStyles.body}>
+              Resize your window to view in mobile width!
+            </Text>
+            <Text style={gateStyles.hint}>
+              Narrow your browser to under {MAX_MOBILE_WIDTH}px
+            </Text>
+            <Pressable
+              onPress={() => setDismissed(true)}
+              style={gateStyles.dismissBtn}
+            >
+              <Text style={gateStyles.dismissText}>View app anyway</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 }
@@ -74,6 +100,18 @@ const gateStyles = StyleSheet.create({
     lineHeight: 18,
     color: colors.textTertiary,
     textAlign: 'center',
+  },
+  dismissBtn: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing['2xl'],
+  },
+  dismissText: {
+    fontFamily: fonts.bodyMedium,
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textTertiary,
+    textDecorationLine: 'underline',
   },
 });
 
