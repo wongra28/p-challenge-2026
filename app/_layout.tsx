@@ -7,7 +7,7 @@ import { Feather } from '@expo/vector-icons';
 import { SessionProvider } from '../lib/context';
 import { colors, spacing, fonts } from '../lib/theme';
 
-const MAX_MOBILE_WIDTH = 480;
+const MAX_MOBILE_WIDTH = 500;
 
 function useWindowWidth() {
   const [width, setWidth] = useState(() => {
