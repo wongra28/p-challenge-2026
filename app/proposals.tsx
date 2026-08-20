@@ -405,11 +405,9 @@ export default function ProposalsScreen() {
             : 0;
 
           function gapStyle(val: number) {
-            if (val <= 0.2) return { qualifier: 'Great', color: colors.textSuccess };
-            if (val <= 0.5) return { qualifier: 'Good', color: colors.textSuccess };
-            if (val <= 1.0) return { qualifier: 'Fair', color: colors.textPrimary };
-            if (val <= 2.0) return { qualifier: 'Poor', color: colors.textAmber };
-            return { qualifier: 'Bad', color: colors.textError };
+            if (val <= 0.3) return { qualifier: 'Great', color: colors.textSuccess };
+            if (val <= 0.7) return { qualifier: 'Good', color: colors.textSuccess };
+            return { qualifier: 'Poor', color: colors.textAmber };
           }
 
           const { qualifier: gapQualifier, color: gapColor } = gapStyle(gapVal);
