@@ -262,13 +262,8 @@ export default function ProposalsScreen() {
   };
 
   const handleFinalize = () => {
-    if (hasOverrides) {
-      setShowFinalizeSheet(true);
-      setFinalizeReason('');
-    } else {
-      dispatch({ type: 'FINALIZE_PROPOSAL', proposalIndex: activeIndex });
-      router.push('/scores');
-    }
+    setShowFinalizeSheet(true);
+    setFinalizeReason('');
   };
 
   const handleFinalizeConfirm = () => {
@@ -590,33 +585,37 @@ export default function ProposalsScreen() {
             <View style={styles.handle} />
             <Text style={typeStyles.displaySm}>Confirm teams and start game</Text>
 
-            <View style={styles.swapList}>
-              {currentOverrides.map((o, i) => (
-                <View key={i} style={styles.swapListItem}>
-                  <Feather name="repeat" size={14} color={colors.textBrand} />
-                  <Text style={[typeStyles.textSm, { color: colors.textSecondary, flex: 1 }]}>
-                    {o.playerAName} (Team {o.teamA}) ↔ {o.playerBName} (Team {o.teamB})
-                  </Text>
+            {hasOverrides && (
+              <>
+                <View style={styles.swapList}>
+                  {currentOverrides.map((o, i) => (
+                    <View key={i} style={styles.swapListItem}>
+                      <Feather name="repeat" size={14} color={colors.textBrand} />
+                      <Text style={[typeStyles.textSm, { color: colors.textSecondary, flex: 1 }]}>
+                        {o.playerAName} (Team {o.teamA}) ↔ {o.playerBName} (Team {o.teamB})
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
 
-            <View style={styles.reasonSection}>
-              <Text style={[typeStyles.labelMd, { color: colors.textSecondary }]}>
-                Why were these swaps made?
-              </Text>
-              <Text style={[typeStyles.textSm, { color: colors.textTertiary }]}>
-                This helps us improve our rating system and player matching in future games.
-              </Text>
-              <TextInput
-                style={styles.reasonInput}
-                placeholder="Briefly explain the reason (optional)"
-                placeholderTextColor={colors.textTertiary}
-                value={finalizeReason}
-                onChangeText={setFinalizeReason}
-                multiline
-              />
-            </View>
+                <View style={styles.reasonSection}>
+                  <Text style={[typeStyles.labelMd, { color: colors.textSecondary }]}>
+                    Why were these swaps made?
+                  </Text>
+                  <Text style={[typeStyles.textSm, { color: colors.textTertiary }]}>
+                    This helps us improve our rating system and player matching in future games.
+                  </Text>
+                  <TextInput
+                    style={styles.reasonInput}
+                    placeholder="Briefly explain the reason (optional)"
+                    placeholderTextColor={colors.textTertiary}
+                    value={finalizeReason}
+                    onChangeText={setFinalizeReason}
+                    multiline
+                  />
+                </View>
+              </>
+            )}
 
             <View style={styles.sheetActions}>
               <Button
