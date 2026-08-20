@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
-import { colors, spacing } from '../../lib/theme';
+import { colors, spacing, fonts } from '../../lib/theme';
 
 export default function TabLayout() {
   return (
@@ -18,6 +18,7 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarLabelStyle: {
           fontSize: 12,
+          fontFamily: fonts.bodyMedium,
           fontWeight: '500',
         },
       }}
