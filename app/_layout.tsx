@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -10,17 +10,19 @@ import { colors, spacing, fonts } from '../lib/theme';
 const MAX_MOBILE_WIDTH = 480;
 
 function useWindowWidth() {
-  const [width, setWidth] = useState(() =>
-    Platform.OS === 'web' && typeof window !== 'undefined'
-      ? window.innerWidth
-      : 0
-  );
+  const [width, setWidth] = useState(() => {
+    if (Platform.OS !== 'web') return 0;
+    if (typeof window === 'undefined') return 0;
+    return window.innerWidth;
+  });
 
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
-    const handleResize = () => setWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    // Set initial value in case SSR value was 0
+    setWidth(window.innerWidth);
+    const onResize = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   return width;
@@ -30,14 +32,30 @@ function MobileGate({ children }: { children: React.ReactNode }) {
   const width = useWindowWidth();
   const [dismissed, setDismissed] = useState(false);
 
-  const showOverlay =
-    Platform.OS === 'web' && width > MAX_MOBILE_WIDTH && !dismissed;
+  if (Platform.OS !== 'web') return <>{children}</>;
+
+  const showOverlay = width > MAX_MOBILE_WIDTH && !dismissed;
 
   return (
     <View style={gateStyles.wrapper}>
       {children}
       {showOverlay && (
-        <View style={gateStyles.overlay}>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(12, 17, 29, 0.92)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 99999,
+          }}
+        >
           <View style={gateStyles.content}>
             <Feather name="smartphone" size={40} color={colors.textBrand} />
             <Text style={gateStyles.title}>Mobile viewport required</Text>
@@ -54,7 +72,7 @@ function MobileGate({ children }: { children: React.ReactNode }) {
               <Text style={gateStyles.dismissText}>View app anyway</Text>
             </Pressable>
           </View>
-        </View>
+        </div>
       )}
     </View>
   );
@@ -63,16 +81,6 @@ function MobileGate({ children }: { children: React.ReactNode }) {
 const gateStyles = StyleSheet.create({
   wrapper: {
     flex: 1,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(12, 17, 29, 0.85)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 9999,
-    // @ts-expect-error backdrop-filter works on web
-    backdropFilter: 'blur(16px)',
-    WebkitBackdropFilter: 'blur(16px)',
   },
   content: {
     alignItems: 'center',
@@ -110,7 +118,7 @@ const gateStyles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
     fontSize: 14,
     lineHeight: 20,
-    color: colors.textTertiary,
+    color: colors.textBrand,
     textDecorationLine: 'underline',
   },
 });
